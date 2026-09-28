@@ -1,0 +1,78 @@
+# Environment variables and local secrets
+.env
+.env.*
+!.env.example
+!.env.template
+*.pem
+*.key
+
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pytype/
+.hypothesis/
+.tox/
+.nox/
+
+# Test and coverage output
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.cache/
+
+# Build and packaging output
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs and local runtime data
+*.log
+logs/
+*.pid
+*.db
+*.sqlite
+*.sqlite3
+
+# Downloaded ML models and checkpoints
+models/
+checkpoints/
+*.ckpt
+*.onnx
+*.pt
+*.pth
+*.safetensors
+
+# Generated application output
+output/
+outputs/
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# uv local cache (uv.lock is intentionally committed)
+.uv-cache/
