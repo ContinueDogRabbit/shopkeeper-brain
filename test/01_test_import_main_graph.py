@@ -1,15 +1,20 @@
 from processor.import_processor.main_graph import kb_import_app
 from processor.import_processor.state import ImportGraphState
 from common.logging.logger import logger
+from utils.path_util import PROJECT_ROOT
+import os
 if __name__ == "__main__":
     from utils.path_util import PROJECT_ROOT
     import os
+    from common.logging.logger import logger
 
-    # 全流程测试：验证PDF导入→Milvus入库→KG导入完整链路
+    # 全流程测试：验证PDF导入→Milvus入库完整链路
     logger.info("===== 开始执行知识图谱导入全流程测试 =====")
-    # 1. 构造测试文件路径（复用你项目的doc目录，和pdf2md测试文件一致）
+
+    # 1. 构造测试文件路径（复用你项目的doc目录）
     test_pdf_name = os.path.join("doc", "hak180产品安全手册.pdf")
     test_pdf_path = os.path.join(PROJECT_ROOT, test_pdf_name)
+
     # 2. 构造输出目录（存放MD/图片等中间文件）
     test_output_dir = os.path.join(PROJECT_ROOT, "output")
     os.makedirs(test_output_dir, exist_ok=True)  # 不存在则创建
@@ -30,38 +35,35 @@ if __name__ == "__main__":
         try:
             logger.info(f"测试任务启动，PDF文件路径：{test_pdf_path}")
             logger.info(f"中间文件输出目录：{test_output_dir}")
-            logger.info("开始执行全流程节点，依次执行：entry→pdf2md→md_img→split→item_name→embedding→milvus→kg")
+            logger.info("开始执行全流程节点，依次执行：entry→pdf2md→md_img→split→item_name→embedding→milvus")
 
             # 5. 执行LangGraph全流程（流式执行，打印节点执行进度）
             final_state = None
             for step in kb_import_app.stream(test_state, stream_mode="updates"):
-                # step 格式：{节点名: 更新数据-该节点的输出}
-                for node_name, updates in step.items():
-                    logger.info(f"✅ 节点执行完成：{node_name}")
-                    # 合并更新到 final_state（模拟 values 模式的效果）
-                    if final_state is None:
-                        final_state = {}
-                    final_state.update(updates)
-
+                # 打印当前执行完成的节点（流式输出更直观）
+                current_node = list(step.keys())[-1] if step else "未知节点"
+                logger.info(f"✅ 节点执行完成：{current_node}")
+                final_state = step  # 保存最终状态
 
             # 6. 全流程执行完成，结果预览和核心指标打印
             if final_state:
                 logger.info("-" * 80)
                 logger.info("===== 全流程测试执行成功，核心结果预览 =====")
+
                 # 提取核心结果指标
                 chunks = final_state.get("chunks", [])
                 chunk_count = len(chunks)
                 md_content = final_state.get("md_content", "")[:150]  # MD内容前150字符
+                item_name = final_state.get("item_name", "未识别")  # 主体名称
                 has_embedding = all("dense_vector" in c and "sparse_vector" in c for c in chunks) if chunks else False
                 has_chunk_id = all("chunk_id" in c for c in chunks) if chunks else False
-                kg_id = final_state.get("kg_id", "未生成")  # KG导入生成的ID（按实际业务字段调整）
 
                 # 打印核心指标
                 logger.info(f"📄 PDF转MD内容预览（前150字符）：{md_content}...")
+                logger.info(f"🏷️  识别的主体名称：{item_name}")
                 logger.info(f"📝 文档切分总切片数：{chunk_count}")
                 logger.info(f"🔍 所有切片是否完成向量化：{'是' if has_embedding else '否'}")
                 logger.info(f"🗄️  所有切片是否完成Milvus入库（含chunk_id）：{'是' if has_chunk_id else '否'}")
-                logger.info(f"🧠 知识图谱导入ID：{kg_id}")
                 logger.info(f"📂 最终状态包含的核心键：{list(final_state.keys())}")
                 logger.info("-" * 80)
         except Exception as e:
