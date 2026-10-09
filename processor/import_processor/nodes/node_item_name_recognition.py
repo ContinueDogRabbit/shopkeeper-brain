@@ -197,7 +197,7 @@ def node_item_name_recognition(state: ImportGraphState) -> ImportGraphState:
     step_5_insert_item_name_data(item_name, file_title)
 
     state["item_name"] = item_name
-    state["chunks"] = chunks
+    state["chunks"] =  chunks
     # TODO 7.添加结束状态
     add_done_task(task_id=state.get("task_id"),node_name="node_item_name_recognition")
     return state
