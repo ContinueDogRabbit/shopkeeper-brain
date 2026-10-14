@@ -674,7 +674,7 @@
         // 保留首条欢迎消息，其余先清空再渲染历史
         const nodes = Array.from(chatEl.querySelectorAll('.msg'));
         for(let i=1;i<nodes.length;i++) nodes[i].remove();
-        items.reverse()
+        // items.reverse()
         for(const item of items){
           if(item.role === 'user'){
             addUserMsgWithTime(item.text || '', item.ts);
